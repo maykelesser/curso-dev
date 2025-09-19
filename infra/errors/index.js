@@ -97,3 +97,23 @@ export class MethodNotAllowedError extends Error {
         };
     }
 }
+
+export class UnauthorizedError extends Error {
+    constructor({ cause, message, action }) {
+        super(message || "Unauthorized", {
+            cause,
+        });
+        this.name = "UnauthorizedError";
+        this.action = action || "Do the login again";
+        this.status_code = 401;
+    }
+
+    toJSON() {
+        return {
+            name: this.name,
+            message: this.message,
+            action: this.action,
+            status_code: this.status_code,
+        };
+    }
+}
