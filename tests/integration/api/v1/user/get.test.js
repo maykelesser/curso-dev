@@ -30,7 +30,9 @@ describe("GET User Endpoint", () => {
             const cacheControl = response.headers.get("Cache-Control");
 
             expect(response.status).toBe(200);
-            expect(cacheControl).toBe("no-store, no-cache, max-age=0, must-revalidate");
+            expect(cacheControl).toBe(
+                "no-store, no-cache, max-age=0, must-revalidate",
+            );
             expect(responseBody).toEqual({
                 id: createdUser.id,
                 username: "UserWithValidSession",
