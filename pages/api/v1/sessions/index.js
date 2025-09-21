@@ -1,4 +1,3 @@
-import * as cookie from "cookie";
 import sessions from "models/session";
 import controller from "infra/controller";
 import authentication from "models/authentication";
@@ -28,14 +27,8 @@ async function postHandler(req, res) {
     );
 
     const newSession = await sessions.create(authenticatedUser.id);
-    const setCookie = cookie.serialize("session_id", newSession.token, {
-        path: "/",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: sessions.EXPIRATION_IN_MILLISECONDS / 1000,
-    });
 
-    res.setHeader("Set-Cookie", setCookie);
+    controller.setSessionCookie(newSession.token, res);
 
     return res.status(201).json(newSession);
 }
