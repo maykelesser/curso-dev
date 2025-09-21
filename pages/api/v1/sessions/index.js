@@ -5,6 +5,7 @@ import { createRouter } from "next-connect";
 
 const router = createRouter();
 router.post(postHandler);
+router.delete(deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 
@@ -31,4 +32,22 @@ async function postHandler(req, res) {
     controller.setSessionCookie(newSession.token, res);
 
     return res.status(201).json(newSession);
+}
+
+/**
+ * @function deleteHandler
+ * @author Maykel Esser
+ *
+ * @description This function is responsible for handling the deletion of a session.
+ *
+ * @param {*} req - The request object.
+ * @param {*} res - The response object.
+ */
+async function deleteHandler(req, res) {
+    const sessionToken = req.cookies.session_id;
+    const session = await sessions.findOneValidByToken(sessionToken);
+    const expiredSession = await sessions.expireById(session.id);
+    controller.clearSessionCookie(res);
+
+    return res.status(200).json(expiredSession);
 }

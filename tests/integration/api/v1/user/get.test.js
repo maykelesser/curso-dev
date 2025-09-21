@@ -89,6 +89,19 @@ describe("GET User Endpoint", () => {
                 action: "Check the session token or login again",
                 status_code: 401,
             });
+
+            // Set-Cookie Assertions
+            const parsedSetCookie = setCookieParser(response, {
+                map: true,
+            });
+
+            expect(parsedSetCookie.session_id).toEqual({
+                name: "session_id",
+                value: "invalid",
+                maxAge: -1,
+                path: "/",
+                httpOnly: true,
+            });
         });
 
         test("With expired session", async () => {
