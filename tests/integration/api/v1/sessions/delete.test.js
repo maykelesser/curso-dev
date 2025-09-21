@@ -31,7 +31,6 @@ describe("DELETE Sessions Endpoint", () => {
             );
 
             const responseBody = await response.json();
-            const cacheControl = response.headers.get("Cache-Control");
 
             expect(response.status).toBe(200);
             expect(responseBody).toEqual({
