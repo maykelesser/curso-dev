@@ -14,13 +14,10 @@ function onNoMatchHandler(req, res) {
 }
 
 function onErrorHandler(error, req, res) {
-    if (
-        error instanceof ValidationError ||
-        error instanceof NotFoundError
-    ) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
         return res.status(error.status_code).json(error);
     }
-    
+
     if (error instanceof UnauthorizedError) {
         clearSessionCookie(res);
         return res.status(error.status_code).json(error);
