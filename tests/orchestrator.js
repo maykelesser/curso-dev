@@ -17,6 +17,8 @@ import database from "infra/database";
 import migrator from "models/migrator";
 import { faker } from "@faker-js/faker";
 
+const EMAIL_HTTP_URL = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
+
 /**
  * @function waitForAllServices
  * @author Maykel Esser
@@ -25,6 +27,7 @@ import { faker } from "@faker-js/faker";
  * @see Tests - We are calling this function before running the tests through the beforeAll function.
  */
 async function waitForAllServices() {
+    await waitForEmailServer();
     await waitForWebServer();
 }
 
@@ -41,6 +44,33 @@ async function waitForWebServer() {
         minTimeout: 100,
         maxTimeout: 1000,
     });
+}
+
+/**
+ * @function waitForEmailServer
+ * @author Maykel Esser
+ * @description Wait for the email server to be up and running.
+ * @returns {Promise<void>}
+ */
+async function waitForEmailServer() {
+    return retry(fetchEmailServerStatus, {
+        retries: 100,
+        minTimeout: 100,
+        maxTimeout: 1000,
+    });
+}
+
+/**
+ * @function fetchEmailServerStatus
+ * @author Maykel Esser
+ * @description Fetch the email server status.
+ * @returns {Promise<void>}
+ */
+async function fetchEmailServerStatus() {
+    const response = await fetch(`${EMAIL_HTTP_URL}`);
+    if (response.status !== 200) {
+        throw new Error();
+    }
 }
 
 /**
@@ -70,10 +100,22 @@ async function clearDatabase() {
     await database.query("CREATE SCHEMA public;");
 }
 
+/**
+ * @function runPendingMigrations
+ * @author Maykel Esser
+ * @description Run the pending migrations.
+ * @returns {Promise<void>}
+ */
 async function runPendingMigrations() {
     await migrator.runPendingMigrations();
 }
 
+/**
+ * @function createUser
+ * @author Maykel Esser
+ * @description Create a user.
+ * @returns {Promise<void>}
+ */
 async function createUser(userObject) {
     return await user.create({
         username:
@@ -84,8 +126,45 @@ async function createUser(userObject) {
     });
 }
 
+/**
+ * @function createSession
+ * @author Maykel Esser
+ * @description Create a session.
+ * @returns {Promise<void>}
+ */
 async function createSession(userId) {
     return await session.create(userId);
+}
+
+/**
+ * @function deleteAllEmails
+ * @author Maykel Esser
+ * @description Delete all emails from the email server.
+ * @returns {Promise<void>}
+ */
+async function deleteAllEmails() {
+    await fetch(`${EMAIL_HTTP_URL}/messages`, {
+        method: "DELETE",
+    });
+}
+
+/**
+ * @function getLastEmail
+ * @author Maykel Esser
+ * @description Get the last email from the email server.
+ * @returns {Promise<void>}
+ */
+async function getLastEmail() {
+    const response = await fetch(`${EMAIL_HTTP_URL}/messages`);
+    const body = await response.json();
+    const lastEmailItem = body.pop();
+
+    const emailTextResponse = await fetch(
+        `${EMAIL_HTTP_URL}/messages/${lastEmailItem.id}.plain`,
+    );
+    lastEmailItem.text = await emailTextResponse.text();
+
+    return lastEmailItem;
 }
 
 const orchestrator = {
@@ -94,6 +173,8 @@ const orchestrator = {
     runPendingMigrations,
     createUser,
     createSession,
+    deleteAllEmails,
+    getLastEmail,
 };
 
 export default orchestrator;
