@@ -155,6 +155,7 @@ describe("PATCH Users (By Username) Endpoint", () => {
                 username: "user7",
                 email: createdUser.email,
                 password: responseBody.password,
+                features: [],
                 created_at: responseBody.created_at,
                 updated_at: responseBody.updated_at,
             });
@@ -192,6 +193,7 @@ describe("PATCH Users (By Username) Endpoint", () => {
                 username: createdUser.username,
                 email: "user9@test.com",
                 password: responseBody.password,
+                features: [],
                 created_at: responseBody.created_at,
                 updated_at: responseBody.updated_at,
             });
@@ -227,6 +229,7 @@ describe("PATCH Users (By Username) Endpoint", () => {
                 username: createdUser.username,
                 email: createdUser.email,
                 password: responseBody.password,
+                features: [],
                 created_at: responseBody.created_at,
                 updated_at: responseBody.updated_at,
             });
