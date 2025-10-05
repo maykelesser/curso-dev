@@ -28,7 +28,7 @@ describe("GET Users (By Username) Endpoint", () => {
                 username: "SameCase",
                 email: "same.case@test.com",
                 password: response2Body.password,
-                features: [],
+                features: ["read:activation_token"],
                 created_at: response2Body.created_at,
                 updated_at: response2Body.updated_at,
             });
@@ -56,7 +56,7 @@ describe("GET Users (By Username) Endpoint", () => {
                 username: "SameCase1",
                 email: "same.case1@test.com",
                 password: response2Body.password,
-                features: [],
+                features: ["read:activation_token"],
                 created_at: response2Body.created_at,
                 updated_at: response2Body.updated_at,
             });
