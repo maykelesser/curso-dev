@@ -1,3 +1,4 @@
+import user from "models/user";
 import email from "infra/email";
 import database from "infra/database";
 import webserver from "infra/webserver";
@@ -64,10 +65,36 @@ async function findOneValidById(token) {
     return result.rows[0];
 }
 
+async function markTokenAsUsed(tokenId) {
+    const result = await database.query({
+        text: `
+            UPDATE 
+                user_activation_tokens
+            SET
+                used_at = timezone('utc', now()),
+                updated_at = timezone('utc', now())
+            WHERE
+                id = $1
+            RETURNING 
+                *
+            ;
+            `,
+        values: [tokenId],
+    });
+
+    return result.rows[0];
+}
+
+async function activateUserByUserId(userId) {
+    const activatedUser = await user.setFeatures(userId, ["create:session"]);
+    return activatedUser;
+}
 const activation = {
     create,
     sendEmailToUser,
     findOneValidById,
+    markTokenAsUsed,
+    activateUserByUserId,
 };
 
 export default activation;
