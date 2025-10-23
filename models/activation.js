@@ -35,35 +35,39 @@ async function create(userId) {
     }
 }
 
-async function findOneByUserId(userId) {
-    const newToken = await runSelectQuery(userId);
-    return newToken;
+async function findOneValidById(token) {
+    const result = await database.query({
+        text: `
+            SELECT 
+                * 
+            FROM 
+                user_activation_tokens 
+            WHERE 
+                id = $1 
+            AND 
+                expires_at > NOW() 
+            AND 
+                used_at IS NULL 
+            LIMIT 
+                1
+            ;`,
+        values: [token],
+    });
 
-    async function runSelectQuery(userId) {
-        const result = await database.query({
-            text: `
-                SELECT 
-                    * 
-                FROM 
-                    user_activation_tokens 
-                WHERE 
-                    user_id = $1 
-                AND 
-                    expires_at > NOW() 
-                LIMIT 
-                    1
-                ;`,
-            values: [userId],
+    if (result.rowCount === 0) {
+        throw new NotFoundError({
+            message: "Activation token not found or expired",
+            action: "Sign up again",
         });
-
-        return result.rows[0];
     }
+
+    return result.rows[0];
 }
 
 const activation = {
-    sendEmailToUser,
     create,
-    findOneByUserId,
+    sendEmailToUser,
+    findOneValidById,
 };
 
 export default activation;
