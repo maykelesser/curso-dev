@@ -6,6 +6,7 @@ import {
     ValidationError,
     NotFoundError,
     UnauthorizedError,
+    ForbiddenError,
 } from "infra/errors";
 
 function onNoMatchHandler(req, res) {
@@ -14,7 +15,7 @@ function onNoMatchHandler(req, res) {
 }
 
 function onErrorHandler(error, req, res) {
-    if (error instanceof ValidationError || error instanceof NotFoundError) {
+    if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
         return res.status(error.status_code).json(error);
     }
 
@@ -53,6 +54,57 @@ function clearSessionCookie(res) {
     res.setHeader("Set-Cookie", setCookie);
 }
 
+async function injectAnonymousOrUser(req, res, next) {
+    if (req.cookies?.session_id) {
+        await injectAuthenticatedUser(req);
+        return next();
+    }
+
+    injectAnonymousUser(req);
+    return next();
+}
+
+async function injectAuthenticatedUser(req) {
+    const sessionToken = req.cookies.session_id;
+    const session = await sessions.findOneValidByToken(sessionToken);
+    const userObject = await users.findOneById(session.user_id);
+
+    req.context = {
+        ...req.context,
+        user: userObject
+    };
+}
+
+function injectAnonymousUser(req) {
+    const anonymousUserObject = {
+        features: [
+            "read:activation_token",
+            "create:session",
+            "create:user"
+        ],
+    };
+
+    req.context = {
+        ...req.context,
+        user: anonymousUserObject
+    }
+}
+
+function canRequest(feature) {
+    return function canRequestMiddleware(req, res, next) {
+        const userTryingToRequest = req.context.user;
+
+        if (userTryingToRequest.features.includes(feature)) {
+            return next();
+        }
+
+        throw new ForbiddenError({
+            message: "Forbidden Access",
+            action: `Check your user features if you have access to this resource: ${feature}`,
+        });
+    }
+}
+
 const controller = {
     setSessionCookie,
     clearSessionCookie,
@@ -60,6 +112,8 @@ const controller = {
         onNoMatch: onNoMatchHandler,
         onError: onErrorHandler,
     },
+    injectAnonymousOrUser,
+    canRequest
 };
 
 export default controller;
