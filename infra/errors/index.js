@@ -124,8 +124,9 @@ export class ForbiddenError extends Error {
             cause,
         });
         this.name = "ForbiddenError";
-        this.action = action || "Check your user features if you have access to this resource";
+        this.action =
+            action ||
+            "Check your user features if you have access to this resource";
         this.status_code = 403;
     }
 }
-
