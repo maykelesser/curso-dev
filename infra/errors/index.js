@@ -129,4 +129,13 @@ export class ForbiddenError extends Error {
             "Check your user features if you have access to this resource";
         this.status_code = 403;
     }
+
+    toJSON() {
+        return {
+            name: this.name,
+            message: this.message,
+            action: this.action,
+            status_code: this.status_code,
+        };
+    }
 }
