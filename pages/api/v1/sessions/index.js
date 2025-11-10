@@ -1,7 +1,9 @@
 import sessions from "models/session";
 import controller from "infra/controller";
 import authentication from "models/authentication";
+import authorization from "models/authorization";
 import { createRouter } from "next-connect";
+import { ForbiddenError } from "infra/errors";
 
 const router = createRouter();
 
@@ -28,6 +30,13 @@ async function postHandler(req, res) {
         userInputValues.email,
         userInputValues.password,
     );
+
+    if (!authorization.can(authenticatedUser, "create:session")) {
+        throw new ForbiddenError({
+            message: "You don't have permissions to login",
+            action: "Contact the administrator to get access",
+        });
+    }
 
     const newSession = await sessions.create(authenticatedUser.id);
 

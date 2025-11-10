@@ -15,6 +15,7 @@ import user from "models/user";
 import session from "models/session";
 import database from "infra/database";
 import migrator from "models/migrator";
+import activation from "models/activation";
 import { faker } from "@faker-js/faker";
 
 const EMAIL_HTTP_URL = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -176,6 +177,10 @@ function extractUUID(text) {
     return match ? match[0] : null;
 }
 
+async function activateUser(userObject) {
+    return await activation.activateUserByUserId(userObject.id);
+}
+
 const orchestrator = {
     waitForAllServices,
     clearDatabase,
@@ -185,6 +190,7 @@ const orchestrator = {
     deleteAllEmails,
     getLastEmail,
     extractUUID,
+    activateUser,
 };
 
 export default orchestrator;

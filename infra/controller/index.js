@@ -1,5 +1,7 @@
 import * as cookie from "cookie";
+import users from "models/user";
 import sessions from "models/session";
+import authorization from "models/authorization";
 import {
     InternalServerError,
     MethodNotAllowedError,
@@ -15,7 +17,11 @@ function onNoMatchHandler(req, res) {
 }
 
 function onErrorHandler(error, req, res) {
-    if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
+    if (
+        error instanceof ValidationError ||
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError
+    ) {
         return res.status(error.status_code).json(error);
     }
 
@@ -71,30 +77,26 @@ async function injectAuthenticatedUser(req) {
 
     req.context = {
         ...req.context,
-        user: userObject
+        user: userObject,
     };
 }
 
 function injectAnonymousUser(req) {
     const anonymousUserObject = {
-        features: [
-            "read:activation_token",
-            "create:session",
-            "create:user"
-        ],
+        features: ["read:activation_token", "create:session", "create:user"],
     };
 
     req.context = {
         ...req.context,
-        user: anonymousUserObject
-    }
+        user: anonymousUserObject,
+    };
 }
 
 function canRequest(feature) {
     return function canRequestMiddleware(req, res, next) {
         const userTryingToRequest = req.context.user;
 
-        if (userTryingToRequest.features.includes(feature)) {
+        if (authorization.can(userTryingToRequest, feature)) {
             return next();
         }
 
@@ -102,7 +104,7 @@ function canRequest(feature) {
             message: "Forbidden Access",
             action: `Check your user features if you have access to this resource: ${feature}`,
         });
-    }
+    };
 }
 
 const controller = {
@@ -113,7 +115,7 @@ const controller = {
         onError: onErrorHandler,
     },
     injectAnonymousOrUser,
-    canRequest
+    canRequest,
 };
 
 export default controller;
