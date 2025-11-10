@@ -2,6 +2,7 @@ import user from "models/user";
 import email from "infra/email";
 import database from "infra/database";
 import webserver from "infra/webserver";
+import { NotFoundError } from "infra/errors";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 minutes
 
@@ -89,6 +90,7 @@ async function activateUserByUserId(userId) {
     const activatedUser = await user.setFeatures(userId, ["create:session"]);
     return activatedUser;
 }
+
 const activation = {
     create,
     sendEmailToUser,
