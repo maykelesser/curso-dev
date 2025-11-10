@@ -10,14 +10,30 @@ beforeAll(async () => {
 });
 
 describe("GET User Endpoint", () => {
+    describe("Anonymous user", () => {
+        test("Retrieving the endpoint", async () => {
+            const response = await fetch("http://localhost:3000/api/v1/user");
+            const responseBody = await response.json();
+            expect(response.status).toBe(403);
+            expect(responseBody).toEqual({
+                name: "ForbiddenError",
+                message: "Forbidden Access",
+                action: "Check your user features if you have access to this resource: read:session",
+                status_code: 403,
+            });
+        });
+    });
+
     describe("Default user", () => {
         test("With valid session", async () => {
             const createdUser = await orchestrator.createUser({
                 username: "UserWithValidSession",
             });
 
+            const activatedUser = await orchestrator.activateUser(createdUser);
+
             const sessionObject = await orchestrator.createSession(
-                createdUser.id,
+                activatedUser.id,
             );
 
             const response = await fetch("http://localhost:3000/api/v1/user", {
@@ -34,13 +50,13 @@ describe("GET User Endpoint", () => {
                 "no-store, no-cache, max-age=0, must-revalidate",
             );
             expect(responseBody).toEqual({
-                id: createdUser.id,
+                id: activatedUser.id,
                 username: "UserWithValidSession",
-                email: createdUser.email,
-                password: createdUser.password,
-                features: ["read:activation_token"],
-                created_at: createdUser.created_at.toISOString(),
-                updated_at: createdUser.updated_at.toISOString(),
+                email: activatedUser.email,
+                password: activatedUser.password,
+                features: ["create:session", "read:session"],
+                created_at: activatedUser.created_at.toISOString(),
+                updated_at: activatedUser.updated_at.toISOString(),
             });
             expect(uuidVersion(responseBody.id)).toBe(4);
             expect(Date.parse(responseBody.created_at)).not.toBeNaN();
@@ -141,8 +157,8 @@ describe("GET User Endpoint", () => {
             jest.useFakeTimers({
                 now: new Date(
                     Date.now() -
-                        session.EXPIRATION_IN_MILLISECONDS +
-                        5 * 60 * 1000,
+                    session.EXPIRATION_IN_MILLISECONDS +
+                    5 * 60 * 1000,
                 ), // 5 minutes left in session
             });
 
@@ -150,8 +166,10 @@ describe("GET User Endpoint", () => {
                 username: "UserWith5MinutesLeftInSession",
             });
 
+            const activatedUser = await orchestrator.activateUser(createdUser);
+
             const sessionObject = await orchestrator.createSession(
-                createdUser.id,
+                activatedUser.id,
             );
 
             jest.useRealTimers(); // Restore time
@@ -166,13 +184,13 @@ describe("GET User Endpoint", () => {
 
             expect(response.status).toBe(200);
             expect(responseBody).toEqual({
-                id: createdUser.id,
+                id: activatedUser.id,
                 username: "UserWith5MinutesLeftInSession",
-                email: createdUser.email,
-                password: createdUser.password,
-                features: ["read:activation_token"],
-                created_at: createdUser.created_at.toISOString(),
-                updated_at: createdUser.updated_at.toISOString(),
+                email: activatedUser.email,
+                password: activatedUser.password,
+                features: ["create:session", "read:session"],
+                created_at: activatedUser.created_at.toISOString(),
+                updated_at: activatedUser.updated_at.toISOString(),
             });
             expect(uuidVersion(responseBody.id)).toBe(4);
             expect(Date.parse(responseBody.created_at)).not.toBeNaN();

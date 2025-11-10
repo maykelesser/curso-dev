@@ -4,7 +4,9 @@ import controller from "infra/controller";
 import { createRouter } from "next-connect";
 
 const router = createRouter();
-router.get(getHandler);
+
+router.use(controller.injectAnonymousOrUser);
+router.get(controller.canRequest("read:session"), getHandler);
 
 export default router.handler(controller.errorHandlers);
 
