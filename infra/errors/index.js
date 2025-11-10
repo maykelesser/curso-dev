@@ -117,3 +117,15 @@ export class UnauthorizedError extends Error {
         };
     }
 }
+
+export class ForbiddenError extends Error {
+    constructor({ cause, message, action }) {
+        super(message || "Forbidden Access", {
+            cause,
+        });
+        this.name = "ForbiddenError";
+        this.action = action || "Check your user features if you have access to this resource";
+        this.status_code = 403;
+    }
+}
+
