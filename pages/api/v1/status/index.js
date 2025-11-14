@@ -7,17 +7,6 @@ router.get(getHandler);
 
 export default router.handler(controller.errorHandlers);
 
-/**
- * @function getHandler
- * @author Maykel Esser
- * @description This function is responsible for returning the status of the application.
- * - The updated_at field must contain the current date in ISO format.
- * - The dependencies field must contain the database field.
- * - The database field must contain the version, max_connections and used_connections fields.
- * @param {*} req - The request object.
- * @param {*} res - The response object.
- * @returns {Object} - Returns an object with the status of the application.
- */
 async function getHandler(req, res) {
     const updatedAt = new Date().toISOString();
     const serverVersion = await database.query("SHOW server_version;");
