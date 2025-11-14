@@ -3,7 +3,9 @@ import activation from "models/activation";
 import { createRouter } from "next-connect";
 
 const router = createRouter();
-router.patch(patchHandler);
+
+router.use(controller.injectAnonymousOrUser);
+router.patch(controller.canRequest("read:activation_token"), patchHandler);
 
 export default router.handler(controller.errorHandlers);
 
@@ -16,8 +18,8 @@ export default router.handler(controller.errorHandlers);
 async function patchHandler(req, res) {
     const { token_id } = req.query;
     const validActivationToken = await activation.findOneValidById(token_id);
-    const usedActivationToken = await activation.markTokenAsUsed(token_id);
     await activation.activateUserByUserId(validActivationToken.user_id);
+    const usedActivationToken = await activation.markTokenAsUsed(token_id);
 
     return res.status(200).json(usedActivationToken);
 }
