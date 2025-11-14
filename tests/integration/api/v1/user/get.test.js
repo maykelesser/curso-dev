@@ -157,8 +157,8 @@ describe("GET User Endpoint", () => {
             jest.useFakeTimers({
                 now: new Date(
                     Date.now() -
-                    session.EXPIRATION_IN_MILLISECONDS +
-                    5 * 60 * 1000,
+                        session.EXPIRATION_IN_MILLISECONDS +
+                        5 * 60 * 1000,
                 ), // 5 minutes left in session
             });
 
