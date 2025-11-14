@@ -7,14 +7,6 @@ dayjs.extend(utc);
 dayjs.extend(localeData);
 dayjs.extend(localizedFormat);
 
-/**
- * @function formatDate
- * @author Maykel Esser
- * @description Format a date string to a given format. If the format is not provided, it will use the default format based on the user's locale.
- * @param {string} date - The date string to format
- * @param {string} [format] - The format to apply to the date
- * @returns {Date} The formatted date
- */
 function formatDate({ date, format }) {
     if (!date) {
         throw new Error("The 'date' parameter is required.");

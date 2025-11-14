@@ -13,17 +13,6 @@ router.delete(deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 
-/**
- * @function postHandler
- * @author Maykel Esser
- *
- * @description This function is responsible for handling the creation of a new session.
- *
- * @param {*} req - The request object.
- * @param {*} res - The response object.
- *
- * @returns {Object} - Returns an object with the session that was created.
- */
 async function postHandler(req, res) {
     const userInputValues = req.body;
     const authenticatedUser = await authentication.getAuthenticatedUser(
@@ -45,15 +34,6 @@ async function postHandler(req, res) {
     return res.status(201).json(newSession);
 }
 
-/**
- * @function deleteHandler
- * @author Maykel Esser
- *
- * @description This function is responsible for handling the deletion of a session.
- *
- * @param {*} req - The request object.
- * @param {*} res - The response object.
- */
 async function deleteHandler(req, res) {
     const sessionToken = req.cookies.session_id;
     const session = await sessions.findOneValidByToken(sessionToken);
